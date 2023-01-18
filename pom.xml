@@ -22,6 +22,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.27.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>3.8.1</version>
@@ -158,51 +164,24 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <debug>true</debug>
-                    <verbose>true</verbose>
-                    <compilerArgs>
-                        <arg>-XDignore.symbol.file=true</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <!--                <version>2.5.4</version>-->
-                <extensions>true</extensions>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
+                        <phase>package</phase>
                         <goals>
-                            <goal>manifest</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Bundle-Version>${project.version}</Bundle-Version>
-                        <!--<Bundle-ClassPath>.,WEB-INF/classes,{maven-dependencies}</Bundle-ClassPath>-->
-                        <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
-                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
-                        <Embed-Directory>lib</Embed-Directory>
-                        <Export-Package>com.anf2"</Export-Package>
-                        <Import-Package>
-                            org.apache.camel,
-                            javax.xml.datatype,
-                            org.apache.commons.collections;version="[3.2,4)",
-                            org.apache.commons.collections.comparators;version="[3.2,4)",
-                            org.apache.commons.collections.keyvalue;version="[3.2,4)",
-                            org.apache.commons.logging,org.slf4j;version="[1.6,2)",
-                            oracle.jdbc, oracle.jdbc.driver
-                        </Import-Package>
-                    </instructions>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.anf2.App</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>

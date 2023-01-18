@@ -17,11 +17,11 @@ pipeline {
         stage('DeployToServer') {
             steps {
                 script{
-                    echo "-------------Start of stage DeployServer-------------"
-                    def server = "ubuntu@18.218.179.254 "
+                    echo "-------------Start of stage DeployServer------------"
+                    def server = "ubuntu@3.144.238.92"
                     def path = "/home/ubuntu/app/dirForFiles"
-                    def sshKey = "/home/ubuntu/app/dirForFiles/Ohio.pem"
-                    def projectJar = "EsbParseCsvTransferToApi-1.0-SNAPSHOT.jar"
+                    def sshKey = "/Ohio.pem"
+                    def projectJar = "**/*.jar"
                     deployJar(server, path, projectJar)
                     echo "-------------End of stage DeployServer-------------"
                 }
@@ -37,6 +37,6 @@ pipeline {
 }
 
 def deployJar(def server, def path, def projectJar) {
-    def deploy = sh (script: "scp -r -i home/ubuntu/app/dirForFiles/Ohio.pem **/${projectJar} ${server}:${path}")
+    def deploy = sh (script: "scp -r -i /Ohio.pem ${projectJar} ${server}:${path}")
 }
 

@@ -1,4 +1,4 @@
-package FROM_MEGAFONE;
+package com.anf2.FROM_OldProject;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

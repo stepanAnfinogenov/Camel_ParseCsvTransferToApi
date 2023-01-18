@@ -1,6 +1,9 @@
-package FROM_MEGAFONE;
+package com.anf2.FROM_OldProject;
 
 import com.jcraft.jsch.*;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
@@ -9,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -17,8 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static FROM_MEGAFONE.Const.AUTO_COMMIT_MODE;
-import static FROM_MEGAFONE.Const.LOCAL_DIRECTORY;
+import static com.anf2.FROM_OldProject.Const.*;
 
 /**
  * Created by stepan.anfinogenov on 2022.
@@ -98,6 +101,7 @@ public class Proc implements Processor {
      */
     public String transferFileBySftp(String username, String host, int port, String password, String maskFileName, String fileType, String SftpDirectory, String localDirectory) {
         LOG.info("\n IN Proc -> transferFileBySftp starts");
+
         String curren_dir = "empty";
 
         JSch jsch = new JSch();
@@ -108,11 +112,11 @@ public class Proc implements Processor {
             session = jsch.getSession(username, host, port);
             session.setConfig(config);
             session.setPassword(password);
+            LOG.info("\n----------------\nusername: " + username + "\nString host: " + host + "\nint port: " + port + "\nString password: " + password + "\nmaskFileName: " + maskFileName + "\nString fileType: " + fileType + "\nString SftpDirectory: " + SftpDirectory + "\nString localDirectory: " + localDirectory + "\n-------------------");
             session.connect();
             Channel channel = session.openChannel("sftp");
             channel.connect();
 
-            LOG.info("\nusername: " + username + "\nString host: " + host + "\nint port: " + port + "\nString password: " + password + "\nmaskFileName: " + maskFileName + "\nString fileType: " + fileType + "\nString SftpDirectory: " + SftpDirectory + "\nString localDirectory: " + localDirectory);
             ChannelSftp sftpChannel = (ChannelSftp) channel;
             sftpChannel.cd(SftpDirectory);
             curren_dir = sftpChannel.pwd();
@@ -147,8 +151,7 @@ public class Proc implements Processor {
         return localDirectory + oldestFileName;
     }
 
-
-    private File copyFile(Params params) {
+    private File copyFile(Params params) throws IOException {
         LOG.info("\n IN Proc -> getFile");
 
         if (params.getSFTP()) {
@@ -161,7 +164,7 @@ public class Proc implements Processor {
         }
     }
 
-    private File getFileFromDirectoryBySFTP(Params params) {
+    private File getFileFromDirectoryBySFTP(Params params) throws IOException {
         LOG.info("\n IN Proc -> getFileFromDirectoryBySFTP");
         String filePath = transferFileBySftp(params.getSFTPuser(),
                 params.getSFTPhost(),
