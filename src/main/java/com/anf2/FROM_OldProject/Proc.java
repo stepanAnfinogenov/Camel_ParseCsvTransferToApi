@@ -1,9 +1,6 @@
 package com.anf2.FROM_OldProject;
 
 import com.jcraft.jsch.*;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
@@ -12,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,7 +17,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.anf2.FROM_OldProject.Const.*;
+import static com.anf2.FROM_OldProject.Const.AUTO_COMMIT_MODE;
+import static com.anf2.FROM_OldProject.Const.LOCAL_DIRECTORY;
 
 /**
  * Created by stepan.anfinogenov on 2022.
@@ -31,7 +28,7 @@ public class Proc implements Processor {
     private static final Logger LOG = LoggerFactory.getLogger(Proc.class);
 
     private String oldestFileName = "";
-    private Connection connection = null;
+//    private Connection connection = null;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -39,67 +36,34 @@ public class Proc implements Processor {
         Params params = (Params) exchange.getIn().getBody();
         LOG.info("\n params: " + params);
 
-        File file = copyFile(params);
-        LOG.info("\n file: " + file);
+//        File file = copyFile(params);
+//        LOG.info("\n file: " + file);
 
-        int inserted = call(params);
 //        updateChecker(insertedRows, params);
 
-        LOG.info("\nEND process in Proc, inserted: " + inserted);
-    }
-
-    void start(String url, String usr, String pass) {
-        LOG.info("\n IN Proc -> start start");
-        Locale.setDefault(Locale.ENGLISH);
-        LOG.info("\nGetting connection to: " + url + "\nuser: " + usr + "\npassword: " + pass);
-        try {
-            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-        } catch (SQLException e) {
-            LOG.info("\nIN Proc -> start/SQLException_1" + e);
-            throw new RuntimeException(e);
-        }
-        try {
-            connection = DriverManager.getConnection(url, usr, pass);
-            connection.setAutoCommit(AUTO_COMMIT_MODE);
-        } catch (SQLException e) {
-            LOG.info("IN Proc -> start/SQLException_2" + e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    void stop() throws SQLException {
-        if (connection != null) {
-            connection.close();
-        }
+        LOG.info("\nEND process in Proc");
     }
 
 
-    private int call(Params params) throws Exception {
+    public String  getFile(Params params){
         LOG.info("\n IN Proc -> call starts");
-        try {
-            try {
-                LOG.info("\n IN Proc -> call/try starts");
-                start(params.getTableUrl(), params.getTableUser(), params.getTablePassword());
-//                createIfNotExists(params);
-                truncateTable(params);
-                return insertRows(params);
-            } finally {
-                LOG.info("\n IN Proc -> call/finally");
-                stop();
-            }
-        } catch (Exception e) {
-            LOG.info("\n IN Proc -> call/Exception: " + e);
-            e.printStackTrace();
 
-        }
-        return 0;
+        return transferFileBySftp(
+                params.getUser(),
+                params.getSFTPhost(),
+                params.getSFTPport(),
+                params.getHostPassword(),
+                params.getMaskFile(),
+                params.getFileType(),
+                params.getSFTPdirectory(),
+                params.getLocalDirectory());
     }
 
     /**
      * get the latest file from remote directory by sftp and put it to local directory
      * it's necessary to create folder "/esb/exchange/esb_utils_files/"
      */
-    public String transferFileBySftp(String username, String host, int port, String password, String maskFileName, String fileType, String SftpDirectory, String localDirectory) {
+    private String transferFileBySftp(String username, String host, int port, String password, String maskFileName, String fileType, String SftpDirectory, String localDirectory) {
         LOG.info("\n IN Proc -> transferFileBySftp starts");
 
         String curren_dir = "empty";
@@ -151,33 +115,34 @@ public class Proc implements Processor {
         return localDirectory + oldestFileName;
     }
 
-    private File copyFile(Params params) throws IOException {
-        LOG.info("\n IN Proc -> getFile");
+//    private File copyFile(Params params) throws IOException {
+//        LOG.info("\n IN Proc -> getFile");
+//
+////        if (params.getSFTP()) {
+//        if (true) {
+//            LOG.info("\n IN Proc -> getFile(params.isSFTP() - true)");
+//
+//            return transferFileBySftp(params);
+//        } else {
+//            LOG.info("\n IN Proc -> getFile(params.isSFTP() - false)");
+//            return getFileFromDirectory(params);
+//        }
+//    }
 
-        if (params.getSFTP()) {
-            LOG.info("\n IN Proc -> getFile(params.isSFTP() - true)");
-
-            return getFileFromDirectoryBySFTP(params);
-        } else {
-            LOG.info("\n IN Proc -> getFile(params.isSFTP() - false)");
-            return getFileFromDirectory(params);
-        }
-    }
-
-    private File getFileFromDirectoryBySFTP(Params params) throws IOException {
-        LOG.info("\n IN Proc -> getFileFromDirectoryBySFTP");
-        String filePath = transferFileBySftp(params.getSFTPuser(),
-                params.getSFTPhost(),
-                params.getSFTPport(),
-                params.getSFTPpassword(),
-                params.getMaskFile(),
-                params.getFileType(),
-                params.getSFTPpath(),
-                params.getLocalDirectory()
-        );
-
-        return getFileFromDirectory(filePath);
-    }
+//    private File getFileFromDirectoryBySFTP(Params params) throws IOException {
+//        LOG.info("\n IN Proc -> getFileFromDirectoryBySFTP");
+//        String filePath = transferFileBySftp(params.getSFTPuser(),
+//                params.getSFTPhost(),
+//                params.getSFTPport(),
+//                params.getSFTPpassword(),
+//                params.getMaskFile(),
+//                params.getFileType(),
+//                params.getSFTPpath(),
+//                params.getLocalDirectory()
+//        );
+//
+//        return getFileFromDirectory(filePath);
+//    }
 
     private File getFileFromDirectory(String filePath) {
         LOG.info("\n IN Proc -> getFileFromDirectory with Params");
@@ -204,105 +169,49 @@ public class Proc implements Processor {
         return resultFile;
     }
 
-//    /**
-//     * to work method properly it's necessary to create next procedure into DB:
-//     *
-//     * CREATE OR REPLACE PROCEDURE create_table_if_doesnt_exist(
-//     *   p_table_name VARCHAR2,
-//     *   create_table_query VARCHAR2
-//     * ) AUTHID CURRENT_USER IS
-//     *   n NUMBER;
-//     * BEGIN
-//     *   SELECT COUNT(*) INTO n FROM user_tables WHERE table_name = UPPER(p_table_name);
-//     *   IF (n = 0) THEN
-//     *     EXECUTE IMMEDIATE create_table_query;
-//     *   END IF;
-//     * END;
-//     *
-//     */
-//    private void createIfNotExists(Params params){
-//        LOG.info("\n IN Proc->createIfNotExists");
+    private int insertRows(Params params) {
+//        LOG.info("\n IN Proc->insertRows starts");
 //
-//            StringBuilder accumulatorSQL = new StringBuilder("call create_table_if_doesnt_exist('");
-//            accumulatorSQL
-//                    .append(params.getTableName())
-//                    .append("', 'CREATE TABLE ")
-//                    .append(params.getTableName())
-//                    .append()
-//                    //TODO
-//            ;
+//        StringBuilder accumulatorSQL = new StringBuilder("INSERT ALL\n");
+//        List<String> rows = getRows(params);
 //
-//            try (Statement stmt = connection.createStatement()) {
-//                stmt.setEscapeProcessing(false);
-//                stmt.addBatch(accumulatorSQL.toString());
-//                stmt.executeBatch();
-//            } catch (SQLException e) {
-//                LOG.error("\n SQLException IN Proc->truncateTable failed to truncate table: " + params.getTableName() + e);
+//        try (Statement stmt = connection.createStatement()) {
+//            stmt.setEscapeProcessing(false);
+//            String nameColumns = getColumns(params.getNameColumns());
+//
+//            for (int i = params.getSkipLine(); i < rows.size(); i++) {
+//                String row = rows.get(i);
+//
+//                accumulatorSQL.append("INTO ")
+//                        .append(params.getTableName())
+//                        .append(" (")
+//                        .append(nameColumns)
+//                        .append(") values ('")
+//                        .append(getInsertRows(row, params.getSplitter(), getNecessaryColumns(params.getNumberColumns()), params.getReplaceSign()))
+//                        .append(")\n");
+//                if (i == 10) { // to show sql insert structure with limit 10 rows
+//                    LOG.info("\n rows.size() :" + rows.size());
+//                    LOG.info("\n row :" + row);
+//                    LOG.info("\n Try to insert " + accumulatorSQL + " ******* + more then " + (rows.size() - 10) + " rows *******");
+//                }
 //            }
-//    }
-
-    private void truncateTable(Params params){
-        LOG.info("\n IN Proc->truncateTable");
-        if (params.getTruncateDestTable()) {
-            LOG.info("\n IN Proc->truncateTable getTruncateDestTable - TRUE");
-
-            StringBuilder accumulatorSQL = new StringBuilder("TRUNCATE TABLE ");
-            accumulatorSQL.append(params.getTableName());
-
-            try (Statement stmt = connection.createStatement()) {
-                stmt.setEscapeProcessing(false);
-                stmt.addBatch(accumulatorSQL.toString());
-                stmt.executeBatch();
-            } catch (SQLException e) {
-                LOG.error("\n SQLException IN Proc->truncateTable failed to truncate table: " + params.getTableName() + e);
-            }
-        } else {
-            LOG.info("\n IN Proc->truncateTable getTruncateDestTable - FALSE");
-        }
-    }
-
-    private int insertRows(Params params) throws IOException {
-        LOG.info("\n IN Proc->insertRows starts");
-
-        StringBuilder accumulatorSQL = new StringBuilder("INSERT ALL\n");
-        List<String> rows = getRows(params);
-
-        try (Statement stmt = connection.createStatement()) {
-            stmt.setEscapeProcessing(false);
-            String nameColumns = getColumns(params.getNameColumns());
-
-            for (int i = params.getSkipLine(); i < rows.size(); i++) {
-                String row = rows.get(i);
-
-                accumulatorSQL.append("INTO ")
-                        .append(params.getTableName())
-                        .append(" (")
-                        .append(nameColumns)
-                        .append(") values ('")
-                        .append(getInsertRows(row, params.getSplitter(), getNecessaryColumns(params.getNumberColumns()), params.getReplaceSign()))
-                        .append(")\n");
-                if (i == 10) { // to show sql insert structure with limit 10 rows
-                    LOG.info("\n rows.size() :" + rows.size());
-                    LOG.info("\n row :" + row);
-                    LOG.info("\n Try to insert " + accumulatorSQL + " ******* + more then " + (rows.size() - 10) + " rows *******");
-                }
-            }
-            accumulatorSQL.append("SELECT * FROM dual");
-
-            stmt.addBatch(accumulatorSQL.toString());
-            stmt.executeBatch();
-        } catch (SQLException e) {
-            LOG.error("\n exception IN Proc->insertRows failed to insert \n" +
-                    accumulatorSQL.substring(0, 2000) +
-                    "*******************" +
-                    "*******************" +
-                    "*******************" +
-                    accumulatorSQL.substring(accumulatorSQL.length() - 2000, accumulatorSQL.length()) +
-                    "\n", e);
-            return -1;
-        }
-
-        return rows.size();
+//            accumulatorSQL.append("SELECT * FROM dual");
+//
+//            stmt.addBatch(accumulatorSQL.toString());
+//            stmt.executeBatch();
+//        } catch (SQLException e) {
+//            LOG.error("\n exception IN Proc->insertRows failed to insert \n" +
+//                    accumulatorSQL.substring(0, 2000) +
+//                    "*******************" +
+//                    "*******************" +
+//                    "*******************" +
+//                    accumulatorSQL.substring(accumulatorSQL.length() - 2000, accumulatorSQL.length()) +
+//                    "\n", e);
+//            return -1;
+//        }
+//
+//        return rows.size();
+        return -1;
     }
 
     private String getInsertRows(String row, Character splitter, List<Integer> necessaryColumns, String replaceSign) {
@@ -357,41 +266,41 @@ public class Proc implements Processor {
         return result.substring(0, result.length() - 1);
     }
 
-    private List<String> getRows(Params params) throws IOException {
-        LOG.info("\n IN Proc -> getRows starts");
-        List<String> result = new ArrayList<>();
-
-        FileInputStream inputStream = null;
-        Scanner sc = null;
-        if (oldestFileName.equals("")) {
-            findLatestFile(params);
-        }
-        try {
-            LOG.info("\n IN Proc -> getRows/try starts");
-            inputStream = new FileInputStream(params.getLocalDirectory() + oldestFileName);
-            sc = new Scanner(inputStream, params.getCharset());
-            LOG.info("\n IN Proc -> getRows/try next");
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine();
-
-                result.add(line);
-            }
-
-            if (sc.ioException() != null) {
-                LOG.info("\n IN Proc -> getRows/ioException");
-                throw sc.ioException();
-            }
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (sc != null) {
-                sc.close();
-            }
-        }
-
-        return result;
-    }
+//    private List<String> getRows(Params params) throws IOException {
+//        LOG.info("\n IN Proc -> getRows starts");
+//        List<String> result = new ArrayList<>();
+//
+//        FileInputStream inputStream = null;
+//        Scanner sc = null;
+//        if (oldestFileName.equals("")) {
+//            findLatestFile(params);
+//        }
+//        try {
+//            LOG.info("\n IN Proc -> getRows/try starts");
+//            inputStream = new FileInputStream(params.getLocalDirectory() + oldestFileName);
+//            sc = new Scanner(inputStream, params.getCharset());
+//            LOG.info("\n IN Proc -> getRows/try next");
+//            while (sc.hasNextLine()) {
+//                String line = sc.nextLine();
+//
+//                result.add(line);
+//            }
+//
+//            if (sc.ioException() != null) {
+//                LOG.info("\n IN Proc -> getRows/ioException");
+//                throw sc.ioException();
+//            }
+//        } finally {
+//            if (inputStream != null) {
+//                inputStream.close();
+//            }
+//            if (sc != null) {
+//                sc.close();
+//            }
+//        }
+//
+//        return result;
+//    }
 
     /**
      * method looks for 8 signs in the  file name before 4 latest signs

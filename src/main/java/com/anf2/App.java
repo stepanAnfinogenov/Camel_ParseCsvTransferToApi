@@ -1,5 +1,6 @@
 package com.anf2;
 
+import com.anf2.FROM_OldProject.Params;
 import com.anf2.FROM_OldProject.Proc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +19,17 @@ public class App {
 //        mainRoute.configure();
 
         Proc proc = new Proc();
-        LOG.info("\n--- 2\n");
-
-        proc.transferFileBySftp("ubuntu",
+        Params params = new Params("ubuntu",
                 "18.221.159.73",
                 22,
                 "password",
                 "document_",
                 ".csv",
                 "/home/ubuntu/test1/",
-                "/home/ubuntu/app/dirForFiles/"
-        );
+                "/home/ubuntu/app/dirForFiles/");
+        LOG.info("\n--- 2\n");
+
+        proc.getFile(params);
         LOG.info("\n--- 3\n");
     }
 }
