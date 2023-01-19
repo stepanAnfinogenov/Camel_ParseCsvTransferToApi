@@ -1,35 +1,31 @@
 package com.anf2;
 
-import com.anf2.FROM_OldProject.Params;
-import com.anf2.FROM_OldProject.Proc;
+import com.anf2.model.FileParams;
+import com.anf2.transporters.FileTransporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Hello world!
+ * Created by Stepan Anfinogenov 2023
  */
 public class App {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static void main(String[] args) throws Exception {
-        System.out.println("\n !!!!!!!!!!!!!!!!!!!\n");
         LOG.info("\n--- 1\n");
 
-
-//        MainRoute mainRoute = new MainRoute();
-//        mainRoute.configure();
-
-        Proc proc = new Proc();
-        Params params = new Params("ubuntu",
+        FileParams fileParams = new FileParams(
+                "ubuntu",
                 "18.221.159.73",
                 22,
                 "password",
                 "document_",
                 ".csv",
                 "/home/ubuntu/test1/",
-                "/home/ubuntu/app/dirForFiles/");
+                "/home/ubuntu/app/dirForFiles/");  //for server
+//                "src/main/resources/downloadedFiles");  //for local testing
         LOG.info("\n--- 2\n");
 
-        proc.getFile(params);
+        new FileTransporter().getFile(fileParams);
         LOG.info("\n--- 3\n");
     }
 }

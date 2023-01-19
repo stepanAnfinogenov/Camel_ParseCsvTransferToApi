@@ -39,4 +39,3 @@ pipeline {
 def deployJar(def server, def path, def projectJar) {
     def deploy = sh (script: "scp -r -i /Ohio.pem ${projectJar} ${server}:${path}")
 }
-

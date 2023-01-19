@@ -1,4 +1,4 @@
-package com.anf2.FROM_OldProject;
+package com.anf2.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Params {
+public class FileParams {
     private String user;
     private String SFTPhost;
     private Integer SFTPport;
