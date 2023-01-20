@@ -1,4 +1,4 @@
-package com.anf2.constants;
+package com.anf2.esbparsecsvtransfertoapi.constants;
 
 
 /**

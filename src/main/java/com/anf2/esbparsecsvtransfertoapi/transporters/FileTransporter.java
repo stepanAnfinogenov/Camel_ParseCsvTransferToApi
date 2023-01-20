@@ -1,15 +1,17 @@
-package com.anf2.transporters;
+package com.anf2.esbparsecsvtransfertoapi.transporters;
 
-import com.anf2.model.FileParams;
+import com.anf2.esbparsecsvtransfertoapi.entity.FileParams;
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 
 import java.util.List;
 
 /**
  * Created by stepan.anfinogenov on 2022.
  */
+
 
 public class FileTransporter {
     private static final Logger LOG = LoggerFactory.getLogger(FileTransporter.class);
@@ -19,12 +21,12 @@ public class FileTransporter {
 
         return copyLatestFileBySftp(
                 fileParams.getUser(),
-                fileParams.getSFTPhost(),
-                fileParams.getSFTPport(),
+                fileParams.getSftpHost(),
+                fileParams.getSftpPort(),
                 fileParams.getHostPassword(),
                 fileParams.getMaskFile(),
                 fileParams.getFileType(),
-                fileParams.getSFTPdirectory(),
+                fileParams.getSftpDirectory(),
                 fileParams.getLocalDirectory());
     }
 
@@ -68,7 +70,7 @@ public class FileTransporter {
                     }
                 }
             }
-            
+
             LOG.info("\nlatestFileName: " + latestFileName);
 
             sftpChannel.get(latestFileName, (localDirectory + latestFileName));
