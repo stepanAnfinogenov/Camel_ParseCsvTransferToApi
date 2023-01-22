@@ -9,13 +9,23 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class FileParamsServiceImpl implements FileParamsService {
-    private static final Logger LOG = LoggerFactory.getLogger(FileParamsServiceImpl.class);
+public class FileServiceImpl implements FileService {
+    private static final Logger LOG = LoggerFactory.getLogger(FileServiceImpl.class);
 
     @Override
     public String downloadCsvDocument(FileParams fileParams) {
-
         return getFile(fileParams);
+    }
+
+    @Override
+    public String transferDataCsvDocumentToApi(FileParams fileParams) {
+        String fileName = null;
+
+        finedLatestFile();
+        parsFile();
+        transferDataToApi();
+        
+        return fileName;
     }
 
     private String getFile(FileParams fileParams) {
@@ -34,7 +44,6 @@ public class FileParamsServiceImpl implements FileParamsService {
 
     /**
      * get the latest file from remote directory by sftp and put it to local directory
-     * it's necessary to create folder "/esb/exchange/esb_utils_files/"
      */
     private String copyLatestFileBySftp(String username, String host, int port, String password, String maskFileName, String fileType, String SftpDirectory, String localDirectory) {
             LOG.info("\ncopyLatestFileBySftp starts");

@@ -16,7 +16,7 @@ public class FileParams {
     private String sftpHost;
     private Integer sftpPort;
     private String hostPassword;
-    private String maskFile; //document_16012023.csv
+    private String maskFile; //name of doc: document_16012023.csv
     private String fileType;
     private String sftpDirectory;
     private String localDirectory;
