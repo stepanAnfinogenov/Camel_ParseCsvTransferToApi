@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('stepananfi-dockerhubAccess')
         PROJECT_JAR = 'ParseCsvTransferToApi.jar'
         KEY_ACCESS_SERVER = '/keyAppServerIreland.pem'
-        USER_HOST_SERVER = 'ubuntu@34.252.51.97'
+        USER_HOST_SERVER = 'ubuntu@apps.anf2.com'
         PATH_APP_SERVER = '/home/ubuntu/app'
     }
 
