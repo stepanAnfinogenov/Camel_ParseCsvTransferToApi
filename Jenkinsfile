@@ -18,16 +18,16 @@ pipeline {
             steps {
                 echo "-------------Start of stage Build-------------"
                 sh 'mvn clean package'
-//                sh 'docker build -t stepananfi/spring_boot_crud_app:'+"BuildNumber-${env.BUILD_NUMBER}" + ' .'
+                sh 'docker build -t stepananfi/spring_boot_parse_transfer_api:'+"BuildNumber-${env.BUILD_NUMBER}" + ' .'
                 echo "-------------End of stage Build-------------"
             }
         }
-/*
+
         stage('PushDockerHub') {
             steps {
                 echo "-------------Start of stage Push-------------"
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'docker push stepananfi/spring_boot_crud_app:'+"BuildNumber-${env.BUILD_NUMBER}"
+                sh 'docker push stepananfi/spring_boot_parse_transfer_api:'+"BuildNumber-${env.BUILD_NUMBER}"
                 echo "-------------End of stage Push-------------"
             }
         }
@@ -39,7 +39,7 @@ pipeline {
                 echo "-------------End of stage Test-------------"
             }
         }
-*/
+
 
         stage('StopRunningAppOnServer') {
             steps {
@@ -65,8 +65,7 @@ pipeline {
 
     post {
         always {
-        echo "post section"
-//            sh 'docker logout'
+            sh 'docker logout'
         }
     }
 }
